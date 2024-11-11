@@ -1,10 +1,11 @@
 import numpy as np
 from collections import deque
+import math
 
 def leer_entrada():
     # Leer el número de nodos
     size = int(input("Ingrese el número de colonias: "))
-    
+
     # Leer la matriz de distancias
     matriz_distancias = []
     print("Ingrese la matriz de distancias:")
@@ -12,7 +13,7 @@ def leer_entrada():
         fila = list(map(int, input().strip().split()))
         matriz_distancias.append(fila)
     matriz_distancias = np.array(matriz_distancias)
-    
+
     # Leer la matriz de capacidades de transmisión
     matriz_capacidades = []
     print("Ingrese la matriz de capacidades de transmisión:")
@@ -20,7 +21,7 @@ def leer_entrada():
         fila = list(map(int, input().strip().split()))
         matriz_capacidades.append(fila)
     matriz_capacidades = np.array(matriz_capacidades)
-    
+
     return size, matriz_distancias, matriz_capacidades
 
 def mostrar_matriz_kms(size, matriz):
@@ -28,7 +29,7 @@ def mostrar_matriz_kms(size, matriz):
     for fila in matriz:
         print(" ".join(map(str, fila)))
     print("\nSalida:")
-    
+
     letras = [chr(65 + i) for i in range(size)]
     for i in range(size):
         for j in range(size):
@@ -40,22 +41,22 @@ def cableado_minimo(size, matriz):
     visitado = [0]  
     pares = []
     nodoActual = 0
-    
+
     for _ in range(size - 1):  
         menor = float('inf')
         siguienteNodo = -1
-        
+
         for nodo in visitado:
             for j in range(size):
                 if j not in visitado and matriz[nodo][j] != 0 and matriz[nodo][j] < menor:
                     menor = matriz[nodo][j]
                     siguienteNodo = j
                     nodoActual = nodo
-        
+
         if siguienteNodo != -1:
             pares.append([nodoActual, siguienteNodo, menor])
             visitado.append(siguienteNodo)
-    
+
     return pares
 
 def mostrar_tsp_ruta(size, matriz):
@@ -80,7 +81,7 @@ def mostrar_tsp_ruta(size, matriz):
 
     ruta.append(0)
     ruta_letras = [chr(65 + i) for i in ruta]
-    
+
     print("Camino más corto:", " ---> ".join(ruta_letras))
     print()
 
@@ -88,7 +89,7 @@ def bfs(capacidades, fuente, sumidero, padre):
     visitado = [False] * len(capacidades)
     cola = deque([fuente])
     visitado[fuente] = True
-    
+
     while cola:
         u = cola.popleft()
         for v, capacidad in enumerate(capacidades[u]):
@@ -104,7 +105,7 @@ def flujo_maximo(capacidades, fuente, sumidero):
     n = len(capacidades)
     flujo_total = 0
     padre = [-1] * n
-    
+
     while bfs(capacidades, fuente, sumidero, padre):
         flujo_camino = float('Inf')
         v = sumidero
@@ -112,16 +113,16 @@ def flujo_maximo(capacidades, fuente, sumidero):
             u = padre[v]
             flujo_camino = min(flujo_camino, capacidades[u][v])
             v = u
-        
+
         v = sumidero
         while v != fuente:
             u = padre[v]
             capacidades[u][v] -= flujo_camino
             capacidades[v][u] += flujo_camino
             v = u
-        
+
         flujo_total += flujo_camino
-    
+
     return flujo_total
 
 def mostrar_matriz_capacidades(matriz):
@@ -129,6 +130,36 @@ def mostrar_matriz_capacidades(matriz):
     print("Entrada:")
     for fila in matriz:
         print(" ".join(map(str, fila)))
+
+def leer_coordenadas():
+    coordenadas_centrales = []
+    print("Ingrese las coordenadas de las centrales: , (Doble Enter Final)")
+    while True:
+        entrada = input().strip()
+        if not entrada:
+            break
+        x, y = map(int, entrada.strip("()").split(","))
+        coordenadas_centrales.append((x, y))
+
+    print("Ingrese las coordenadas de la nueva central:")
+    x_nueva, y_nueva = map(int, input().strip("()").split(","))
+    nueva_central = (x_nueva, y_nueva)
+
+    return coordenadas_centrales, nueva_central
+
+def encontrar_central_mas_cercana(coordenadas_centrales, nueva_central):
+    # Calcular la distancia euclidiana de nueva a existentes
+    distancia_minima = float('inf')
+    central_mas_cercana = None
+
+    for idx, (x, y) in enumerate(coordenadas_centrales):
+        distancia = math.sqrt((x - nueva_central[0])**2 + (y - nueva_central[1])**2)
+        if distancia < distancia_minima:
+            distancia_minima = distancia
+            central_mas_cercana = (x, y)
+
+    print(f"La central más cercana a {list(nueva_central)} es {list(central_mas_cercana)} con una distancia de {distancia_minima:.3f}.")
+    return central_mas_cercana, distancia_minima
 
 # Programa principal
 size, matriz_distancias, matriz_capacidades = leer_entrada()
@@ -152,3 +183,7 @@ sumidero = size - 1
 flujo_total = flujo_maximo(matriz_capacidades.tolist(), fuente, sumidero)
 print("\nSalida:")
 print("Flujo máximo:", flujo_total)
+
+# Punto 4: Encontrar la central más cercana a la nueva contratación
+coordenadas_centrales, nueva_central = leer_coordenadas()
+encontrar_central_mas_cercana(coordenadas_centrales, nueva_central)
